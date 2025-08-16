@@ -16,11 +16,9 @@ import ru.neoflex.restclient.converters.JsonConverter;
 import ru.neoflex.restclient.interceptors.RequestInterceptor;
 import ru.neoflex.restclient.interceptors.ResponseInterceptor;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
@@ -453,17 +451,6 @@ public class RestClient {
             }
         }
         return StandardCharsets.UTF_8;
-    }
-
-    private String readStream(InputStream is) throws IOException {
-        try (InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8); BufferedReader reader = new BufferedReader(isr)) {
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            return response.toString();
-        }
     }
 
     private byte[] readBytes(InputStream is) throws IOException {
