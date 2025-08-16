@@ -23,6 +23,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.TrustManagerFactory;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +41,6 @@ import java.lang.reflect.Type;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,9 +56,6 @@ import java.net.URLEncoder;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
 public class RestClient {
 
     private final String baseUrl;
@@ -518,30 +520,30 @@ public class RestClient {
             return this;
         }
 
-        public Builder ignoreSSL() {
+        /**
+         * Trusts only the specific self-signed certificate at the given path.
+         * @param certificatePath Path to the self-signed certificate file (in PEM or DER format)
+         */
+        public Builder ignoreSSL(String certificatePath) {
             try {
-                TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        @Override
-                        public X509Certificate[] getAcceptedIssuers() {
-                            return null;
-                        }
-
-                        @Override
-                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                        }
-
-                        @Override
-                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                        }
-                    }
-                };
-
+                // Load the self-signed certificate
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                X509Certificate cert;
+                try (FileInputStream fis = new FileInputStream(certificatePath)) {
+                    cert = (X509Certificate) cf.generateCertificate(fis);
+                }
+                // Create a KeyStore containing our trusted certificate
+                KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+                ks.load(null, null);
+                ks.setCertificateEntry("trustedCert", cert);
+                // Create a TrustManager that trusts the certificate in our KeyStore
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmf.init(ks);
                 SSLContext sc = SSLContext.getInstance("TLS");
-                sc.init(null, trustAllCerts, new SecureRandom());
+                sc.init(null, tmf.getTrustManagers(), new SecureRandom());
                 this.sslContext = sc;
                 this.ignoreSSL = true;
-            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            } catch (NoSuchAlgorithmException | KeyManagementException | CertificateException | IOException | java.security.KeyStoreException e) {
                 throw new RuntimeException("Failed to create SSL context", e);
             }
             return this;
