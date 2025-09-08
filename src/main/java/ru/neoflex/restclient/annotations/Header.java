@@ -5,9 +5,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Аннотация для указания заголовка HTTP запроса через параметр метода.
+ * Применяется к параметрам методов REST-сервиса.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface Header {
 
-    String value();
+  /**
+   * Имя заголовка HTTP.
+   *
+   * @return строковое значение имени заголовка
+   */
+  String value();
 }
