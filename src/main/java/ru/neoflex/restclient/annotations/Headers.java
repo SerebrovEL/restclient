@@ -5,9 +5,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Аннотация для указания статических заголовков HTTP запроса.
+ * Применяется к методам REST-сервиса.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Headers {
 
-    String[] value();
+  /**
+   * Массив заголовков в формате "Имя: Значение".
+   *
+   * @return массив строк с заголовками
+   */
+  String[] value();
 }
