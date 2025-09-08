@@ -5,9 +5,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Аннотация для указания параметра пути (path parameter) в URL.
+ * Применяется к параметрам методов REST-сервиса.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface Path {
 
-    String value();
+  /**
+   * Имя параметра пути в формате {имя}.
+   *
+   * @return строковое значение имени параметра пути
+   */
+  String value();
 }
